@@ -21,14 +21,18 @@ spec:
       labels:
         pod: cloudflared
     spec:
+      securityContext: {{ .Values.podSecurityContext | nindent 8 }}
       serviceAccountName: {{ include "cloudflare-tunnel-remote.fullname" . }}
       containers:
       - name: cloudflared
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext: {{ .Values.securityContext | nindent 10 }}
         command:
           - cloudflared
           - tunnel
+          # We can regulate the cloudflared version via an image tag.
+          - --no-autoupdate
           # In a k8s environment, the metrics server needs to listen outside the pod it runs on.
           # The address 0.0.0.0:2000 allows any pod in the namespace.
           - --metrics
